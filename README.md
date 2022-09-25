@@ -1,5 +1,5 @@
 # Desafio de Projeto DIO - Refinando um Projeto Conceitual de Banco de Dados E-COMMERCE
-Repósitório para entrega Desafio de Projeto DIO
+Repositório para entrega Desafio de Projeto DIO
 
 ## Objetivo
 Refine o modelo apresentado acrescentando os seguintes pontos:
