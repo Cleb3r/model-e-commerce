@@ -1,0 +1,83 @@
+-- 1. Recuperando todos os produtos e suas descrições
+SELECT idProduto, Descrição 
+FROM mydb.Produto;
+
+-- 2. Quais são os pedidos com status "pendente"?
+SELECT idPedido, Status_do_pedido
+FROM mydb.Pedido
+WHERE Status_do_pedido = 'pendente';
+
+-- 3. Qual é o valor total de cada pedido (considerando o valor do produto multiplicado pela quantidade)?
+SELECT p.idPedido, SUM(pr.Valor * rp.Quantidade) AS Valor_Total_Pedido
+FROM mydb.Pedido p
+JOIN mydb.Relação_de_Produto_Pedido rp ON rp.Pedido_idPedido = p.idPedido
+JOIN mydb.Produto pr ON pr.idProduto = rp.Produto_idProduto
+GROUP BY p.idPedido;
+
+-- 4. Quais são os produtos mais caros?
+SELECT idProduto, Descrição, Valor
+FROM mydb.Produto
+ORDER BY Valor DESC;
+
+-- 5. Quais produtos têm mais de 10 unidades em estoque em cada local de armazenamento?
+SELECT e.Local, p.Descrição, SUM(pe.Quantidade) AS Quantidade_Total
+FROM mydb.Produto_em_Estoque pe
+JOIN mydb.Estoque e ON e.idEstoque = pe.Estoque_idEstoque
+JOIN mydb.Produto p ON p.idProduto = pe.Produto_idProduto
+GROUP BY e.Local, p.Descrição
+HAVING SUM(pe.Quantidade) > 10;
+
+-- 6. Quais são os pedidos de clientes individuais (ClientePF)?
+SELECT c.Nome, p.idPedido, p.Status_do_pedido
+FROM mydb.Cliente c
+JOIN mydb.Pedido p ON c.idCliente = p.Cliente_idCliente
+JOIN mydb.ClientePF cpf ON c.ClientePF_idClientePF = cpf.idClientePF
+WHERE cpf.idClientePF IS NOT NULL;
+
+-- 7. Quais produtos estão sendo vendidos por quais vendedores (terceiros), e suas quantidades?
+SELECT tv.Razão_Social AS Vendedor, pr.Descrição AS Produto, pqt.Quantidade
+FROM mydb.Produto_pro_Vendedor_terceiro pvt
+JOIN mydb.Terceiro_Vendedor tv ON tv.idTerceiro_Vendedor = pvt.Terceiro_Vendedor_idTerceiro_Vendedor
+JOIN mydb.Produto pr ON pr.idProduto = pvt.Produto_idProduto
+JOIN mydb.Produto pqt ON pqt.idProduto = pr.idProduto;
+
+-- 8. Quais produtos estão disponíveis em mais de 2 locais de estoque?
+SELECT pr.Descrição, COUNT(pe.Estoque_idEstoque) AS Num_Locais
+FROM mydb.Produto_em_Estoque pe
+JOIN mydb.Produto pr ON pr.idProduto = pe.Produto_idProduto
+GROUP BY pr.Descrição
+HAVING COUNT(pe.Estoque_idEstoque) > 2;
+
+-- 9. Quais pedidos foram feitos por clientes com o nome "João"?
+SELECT p.idPedido, p.Status_do_pedido
+FROM mydb.Pedido p
+JOIN mydb.Cliente c ON p.Cliente_idCliente = c.idCliente
+JOIN mydb.ClientePF cpf ON c.ClientePF_idClientePF = cpf.idClientePF
+WHERE cpf.Nome = 'João';
+
+-- 10. Quais pedidos estão com pagamento pendente?
+SELECT p.idPedido, pg.status_pagamento
+FROM mydb.Pedido p
+JOIN mydb.Pagamento pg ON p.idPedido = pg.Pedido_idPedido
+WHERE pg.status_pagamento = 'pendente';
+
+-- 11. Quais pedidos foram entregues e pagos?
+SELECT e.idEntrega, p.idPedido, p.Status_do_pedido, pg.status_pagamento
+FROM mydb.Entrega e
+JOIN mydb.Pedido p ON e.Pedido_idPedido = p.idPedido
+JOIN mydb.Pagamento pg ON p.idPedido = pg.Pedido_idPedido
+WHERE e.Status_da_entrega = 'entregue' AND pg.status_pagamento = 'pago';
+
+-- 12. Quais vendedores estão oferecendo produtos e suas quantidades?
+SELECT tv.Razão_Social AS Vendedor, pr.Descrição AS Produto, pqt.Quantidade
+FROM mydb.Produto_pro_Vendedor_terceiro pvt
+JOIN mydb.Terceiro_Vendedor tv ON pvt.Terceiro_Vendedor_idTerceiro_Vendedor = tv.idTerceiro_Vendedor
+JOIN mydb.Produto pr ON pvt.Produto_idProduto = pr.idProduto
+JOIN mydb.Produto_em_Estoque pqt ON pr.idProduto = pqt.Produto_idProduto
+GROUP BY tv.Razão_Social, pr.Descrição;
+
+-- 13. Quais fornecedores estão oferecendo quais produtos?
+SELECT f.Razão_Social AS Fornecedor, p.Descrição AS Produto
+FROM mydb.Disponibilizando_um_Produto dp
+JOIN mydb.Fornecedor f ON dp.Fornecedor_idFornecedor = f.idFornecedor
+JOIN mydb.Produto p ON dp.Produto_idProduto = p.idProduto;
